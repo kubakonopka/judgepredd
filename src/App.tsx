@@ -6,7 +6,7 @@ import QuestionHistory from './pages/QuestionHistory';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/judgepredd">
       <div className="min-h-screen bg-gray-100">
         <main className="py-4">
           <Routes>

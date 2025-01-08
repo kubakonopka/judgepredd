@@ -1,0 +1,29 @@
+{
+  "description": "v2 - Perfect prompts experiment",
+  "results": [
+    {
+      "run_name": "run_1",
+      "prompt": "Explain quantum entanglement in simple terms.",
+      "response": "Quantum entanglement is when two or more particles become connected in such a way that the quantum state of each particle cannot be described independently. It's like having two coins that always show opposite sides when flipped, no matter how far apart they are.",
+      "correctness": 0.9,
+      "correctness_weighted": 0.95,
+      "faithfulness": 0.95
+    },
+    {
+      "run_name": "run_2",
+      "prompt": "What causes climate change?",
+      "response": "Climate change is primarily caused by the increase in greenhouse gases in Earth's atmosphere, particularly carbon dioxide from burning fossil fuels. These gases trap heat and cause global temperatures to rise, leading to various environmental impacts.",
+      "correctness": 0.85,
+      "correctness_weighted": 0.9,
+      "faithfulness": 0.9
+    },
+    {
+      "run_name": "run_3",
+      "prompt": "How does a computer processor work?",
+      "response": "A computer processor (CPU) works by executing instructions in a cycle: fetching instructions from memory, decoding them to understand what needs to be done, executing the instructions by performing calculations or moving data, and storing the results back in memory.",
+      "correctness": 0.8,
+      "correctness_weighted": 0.85,
+      "faithfulness": 0.85
+    }
+  ]
+}

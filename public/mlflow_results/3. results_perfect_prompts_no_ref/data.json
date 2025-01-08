@@ -1,0 +1,29 @@
+{
+  "description": "v3 - Perfect prompts without reference",
+  "results": [
+    {
+      "run_name": "run_1",
+      "prompt": "What are black holes?",
+      "response": "Black holes are regions in space where gravity is so strong that nothing, not even light, can escape once it passes the event horizon. They are formed when massive stars collapse at the end of their lives.",
+      "correctness": 0.9,
+      "correctness_weighted": 0.92,
+      "faithfulness": 0.95
+    },
+    {
+      "run_name": "run_2",
+      "prompt": "How does photosynthesis work?",
+      "response": "Photosynthesis is the process by which plants convert sunlight, water, and carbon dioxide into glucose and oxygen. The process takes place in the chloroplasts, specifically using the green pigment chlorophyll to capture light energy.",
+      "correctness": 0.85,
+      "correctness_weighted": 0.88,
+      "faithfulness": 0.9
+    },
+    {
+      "run_name": "run_3",
+      "prompt": "What is machine learning?",
+      "response": "Machine learning is a branch of artificial intelligence where computers learn patterns from data without being explicitly programmed. The system improves its performance through experience, similar to how humans learn from examples.",
+      "correctness": 0.83,
+      "correctness_weighted": 0.85,
+      "faithfulness": 0.85
+    }
+  ]
+}

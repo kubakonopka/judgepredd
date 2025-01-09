@@ -1,0 +1,29 @@
+{
+  "description": "v5 - Perfect prompts with 4o",
+  "results": [
+    {
+      "run_name": "run_1",
+      "prompt": "How does the human immune system work?",
+      "response": "The human immune system is a complex network of cells, tissues, and organs that protect the body from pathogens. It includes white blood cells that identify and destroy harmful substances, antibodies that mark invaders for destruction, and memory cells that remember past infections to respond more quickly in the future.",
+      "correctness": 0.95,
+      "correctness_weighted": 0.96,
+      "faithfulness": 0.97
+    },
+    {
+      "run_name": "run_2",
+      "prompt": "What is artificial intelligence?",
+      "response": "Artificial Intelligence (AI) is the development of computer systems that can perform tasks that typically require human intelligence. This includes learning from experience, recognizing patterns, understanding natural language, making decisions, and solving complex problems. Modern AI uses techniques like machine learning and neural networks.",
+      "correctness": 0.92,
+      "correctness_weighted": 0.94,
+      "faithfulness": 0.95
+    },
+    {
+      "run_name": "run_3",
+      "prompt": "How do vaccines work?",
+      "response": "Vaccines work by introducing a harmless form of a pathogen (or parts of it) to the immune system. This triggers the production of antibodies and memory cells, without causing the actual disease. When the real pathogen is encountered later, the immune system can respond quickly and effectively to prevent infection.",
+      "correctness": 0.9,
+      "correctness_weighted": 0.92,
+      "faithfulness": 0.93
+    }
+  ]
+}

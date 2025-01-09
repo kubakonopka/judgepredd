@@ -1,0 +1,47 @@
+[
+  {
+    "name": "results_basic_prompts",
+    "description": "v1 - Basic prompts experiment",
+    "metrics": {
+      "correctness": 0.75,
+      "correctness_weighted": 0.78,
+      "faithfulness": 0.82
+    }
+  },
+  {
+    "name": "results_perfect_prompts",
+    "description": "v2 - Perfect prompts experiment",
+    "metrics": {
+      "correctness": 0.85,
+      "correctness_weighted": 0.88,
+      "faithfulness": 0.90
+    }
+  },
+  {
+    "name": "results_perfect_prompts_no_ref",
+    "description": "v3 - Perfect prompts without reference",
+    "metrics": {
+      "correctness": 0.86,
+      "correctness_weighted": 0.88,
+      "faithfulness": 0.90
+    }
+  },
+  {
+    "name": "results_perfect_prompts_4o_no_ref",
+    "description": "v4 - Perfect prompts with 4o without reference",
+    "metrics": {
+      "correctness": 0.87,
+      "correctness_weighted": 0.89,
+      "faithfulness": 0.91
+    }
+  },
+  {
+    "name": "results_perfect_prompts_4o",
+    "description": "v5 - Perfect prompts with 4o",
+    "metrics": {
+      "correctness": 0.88,
+      "correctness_weighted": 0.90,
+      "faithfulness": 0.92
+    }
+  }
+]

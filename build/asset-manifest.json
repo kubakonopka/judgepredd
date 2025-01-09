@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/judgepredd/static/css/main.1ce27124.css",
+    "main.js": "/judgepredd/static/js/main.801b4717.js",
+    "index.html": "/judgepredd/index.html",
+    "main.1ce27124.css.map": "/judgepredd/static/css/main.1ce27124.css.map",
+    "main.801b4717.js.map": "/judgepredd/static/js/main.801b4717.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1ce27124.css",
+    "static/js/main.801b4717.js"
+  ]
+}

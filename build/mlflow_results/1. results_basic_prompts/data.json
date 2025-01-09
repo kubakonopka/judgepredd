@@ -1,0 +1,29 @@
+{
+  "description": "v1 - Basic prompts experiment",
+  "results": [
+    {
+      "run_name": "run_1",
+      "prompt": "What is the capital of France?",
+      "response": "The capital of France is Paris.",
+      "correctness": 1.0,
+      "correctness_weighted": 1.0,
+      "faithfulness": 1.0
+    },
+    {
+      "run_name": "run_2",
+      "prompt": "Who wrote Romeo and Juliet?",
+      "response": "William Shakespeare wrote Romeo and Juliet.",
+      "correctness": 1.0,
+      "correctness_weighted": 1.0,
+      "faithfulness": 1.0
+    },
+    {
+      "run_name": "run_3",
+      "prompt": "What is the largest planet in our solar system?",
+      "response": "Jupiter is the largest planet in our solar system.",
+      "correctness": 1.0,
+      "correctness_weighted": 1.0,
+      "faithfulness": 1.0
+    }
+  ]
+}

@@ -295,10 +295,9 @@ export default function ExperimentDetails() {
                 </svg>
               </div>
               <div className="hidden group-hover:block absolute z-10 w-80 p-2 mt-1 text-sm bg-gray-900 text-white rounded shadow-lg">
-                Basic metric evaluating the correctness of answers. Each criterion is scored as either incorrect (0 = 0%) or 
-                correct (1 = 100%). The final score is the average of all criteria scores, shown as a percentage. For example, 
-                0.75 means 75% of criteria were met. A score of -1 indicates the question hasn't been evaluated yet and is 
-                excluded from calculations.
+                Basic metric evaluating the correctness of answers. Each correctness is scored as either incorrect or correct on scale 0-100%. 
+                The final score is the average of all questions correctness scores, shown as a percentage. If there were no data to prove 
+                question correctness then it is shown as non available.
               </div>
             </div>
           </div>
@@ -319,10 +318,9 @@ export default function ExperimentDetails() {
                 </svg>
               </div>
               <div className="hidden group-hover:block absolute z-10 w-80 p-2 mt-1 text-sm bg-gray-900 text-white rounded shadow-lg">
-                Enhanced version of correctness that considers criterion importance. Each criterion is scored as either incorrect 
-                (0 = 0%) or correct (1 = 100%) and multiplied by its weight. The final percentage is the sum of weighted scores 
-                divided by total weights. For example, 0.8 means 80% of weighted criteria were met. A score of -1 indicates the 
-                question hasn't been evaluated yet and is excluded from calculations.
+                Advanced metric evaluating the correctness of answers with importance weights. Each correctness is scored as either incorrect 
+                or correct on scale 0-100% and multiplied by its importance weight. The final score is the weighted average of all questions 
+                correctness scores. If there were no data to prove question correctness then it is shown as non available.
               </div>
             </div>
           </div>
@@ -343,10 +341,9 @@ export default function ExperimentDetails() {
                 </svg>
               </div>
               <div className="hidden group-hover:block absolute z-10 w-80 p-2 mt-1 text-sm bg-gray-900 text-white rounded shadow-lg">
-                Measures how well the response aligns with available context. The score is shown as a percentage where 1.0 (100%) 
-                means the response is fully supported by the context, while 0.0 (0%) indicates significant deviations or made-up 
-                information. For example, 0.9 means 90% faithfulness to the context. A score of -1 indicates the question hasn't 
-                been evaluated yet and is excluded from calculations.
+                Metric evaluating how well answers stick to provided context. Each answer is scored on scale 0-100% based on how much it 
+                relies on given context versus making up information. The final score is the average of all questions faithfulness scores. 
+                If there were no data to evaluate faithfulness then it is shown as non available.
               </div>
             </div>
           </div>
@@ -504,7 +501,7 @@ export default function ExperimentDetails() {
 
         {/* Panel z informacjami o największych zmianach */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Metrics Changes Highlights</h3>
+          <h3 className="text-lg font-semibold mb-4">Metrics Changes Highlights (compared to previous version)</h3>
           {experiment && experiment.previousVersion && (
             <div className="space-y-6">
               {(() => {

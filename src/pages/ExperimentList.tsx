@@ -48,6 +48,16 @@ function MetricWithChange({
   );
 }
 
+function getHighFaithfulnessStats(experiment: Experiment) {
+  const validResults = experiment.results.filter(r => r.faithfulness !== -1);
+  const highFaithfulnessResults = validResults.filter(r => r.faithfulness >= 0.85);
+  
+  return {
+    highFaithfulness: highFaithfulnessResults.length,
+    totalValid: validResults.length
+  };
+}
+
 export default function ExperimentList() {
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,7 +217,7 @@ export default function ExperimentList() {
                 Faithfulness
               </th>
               <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                High Faithfulness ({'>'}85%)
               </th>
             </tr>
           </thead>
@@ -247,16 +257,14 @@ export default function ExperimentList() {
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-300">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      experiment.rawData.dataValidation.loadedSuccessfully
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {experiment.rawData.dataValidation.loadedSuccessfully ? 'Valid' : 'Invalid'}
-                    </span>
-                    <div className="text-sm text-gray-500">
-                      Results: {experiment.rawData.validQuestions}
-                    </div>
+                    {(() => {
+                      const stats = getHighFaithfulnessStats(experiment);
+                      return (
+                        <div>
+                          <div>{stats.highFaithfulness} out of {stats.totalValid} questions</div>
+                        </div>
+                      );
+                    })()}
                   </td>
                 </tr>
               );

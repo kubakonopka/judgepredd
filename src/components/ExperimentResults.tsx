@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { ExperimentResult } from '../types/experiment';
+import { formatMetricValue as formatMetricValueUtil } from '../utils/formatters';
+import ReactMarkdown from 'react-markdown';
 
 interface ExperimentResultsProps {
   results: ExperimentResult[];
   previousResults?: ExperimentResult[];
 }
-
-const formatMetricValue = (value: number): string => {
-  return value.toFixed(2);
-};
 
 const calculateChange = (current: number, previous?: number): { percentage: number; absolute: number } | null => {
   if (previous === undefined || previous === -1 || current === -1) return null;
@@ -57,8 +55,8 @@ export default function ExperimentResults({ results, previousResults }: Experime
 
   const getMetricColor = (value: number) => {
     if (value === -1) return 'text-gray-400';
-    if (value >= 0.8) return 'text-green-600';
-    if (value >= 0.5) return 'text-yellow-600';
+    if (value >= 0.85) return 'text-green-600';
+    if (value >= 0.50) return 'text-yellow-600';
     return 'text-red-600';
   };
 
@@ -76,7 +74,9 @@ export default function ExperimentResults({ results, previousResults }: Experime
     <div className="relative">
       <div className={`bg-gray-50 p-4 rounded-lg text-gray-700 ${!isExpanded ? 'max-h-[200px]' : ''} overflow-hidden`}>
         <div className={!isExpanded ? 'mask-linear-gradient' : ''}>
-          {content}
+          <div className="markdown-content">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
         </div>
       </div>
       <button
@@ -109,6 +109,75 @@ export default function ExperimentResults({ results, previousResults }: Experime
           .mask-linear-gradient {
             mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 40px), transparent 100%);
+          }
+          .markdown-content {
+            font-size: 0.875rem;
+            line-height: 1.5;
+          }
+          .markdown-content h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+          }
+          .markdown-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+          }
+          .markdown-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+          }
+          .markdown-content p {
+            margin-bottom: 0.75rem;
+          }
+          .markdown-content ul, .markdown-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+          }
+          .markdown-content ul {
+            list-style-type: disc;
+          }
+          .markdown-content ol {
+            list-style-type: decimal;
+          }
+          .markdown-content code {
+            background-color: #f3f4f6;
+            padding: 0.2em 0.4em;
+            border-radius: 0.25rem;
+            font-family: monospace;
+          }
+          .markdown-content pre {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            margin-bottom: 0.75rem;
+          }
+          .markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+          }
+          .markdown-content strong {
+            font-weight: 600;
+          }
+          .markdown-content em {
+            font-style: italic;
+          }
+          .markdown-content a {
+            color: #3b82f6;
+            text-decoration: underline;
+          }
+          .markdown-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-right: 0;
+            font-style: italic;
           }
         `}
       </style>
@@ -164,21 +233,21 @@ export default function ExperimentResults({ results, previousResults }: Experime
                         <div className="text-center">
                           <div className="text-sm font-medium text-gray-500">Correctness</div>
                           <div className={`text-xl font-bold ${getMetricColor(result.correctness)}`}>
-                            {result.correctness === -1 ? '—' : formatMetricValue(result.correctness)}
+                            {result.correctness === -1 ? '—' : formatMetricValueUtil(result.correctness)}
                           </div>
                           <MetricChange change={correctnessChange} />
                         </div>
                         <div className="text-center border-x px-12">
                           <div className="text-sm font-medium text-gray-500">Weighted Score</div>
                           <div className={`text-xl font-bold ${getMetricColor(result.correctness_weighted)}`}>
-                            {result.correctness_weighted === -1 ? '—' : formatMetricValue(result.correctness_weighted)}
+                            {result.correctness_weighted === -1 ? '—' : formatMetricValueUtil(result.correctness_weighted)}
                           </div>
                           <MetricChange change={weightedChange} />
                         </div>
                         <div className="text-center">
                           <div className="text-sm font-medium text-gray-500">Faithfulness</div>
                           <div className={`text-xl font-bold ${getMetricColor(result.faithfulness)}`}>
-                            {result.faithfulness === -1 ? '—' : formatMetricValue(result.faithfulness)}
+                            {result.faithfulness === -1 ? '—' : formatMetricValueUtil(result.faithfulness)}
                           </div>
                           <MetricChange change={faithfulnessChange} />
                         </div>

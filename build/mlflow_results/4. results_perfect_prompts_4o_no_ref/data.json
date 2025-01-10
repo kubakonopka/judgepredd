@@ -1,0 +1,29 @@
+{
+  "description": "v4 - Perfect prompts with 4o without reference",
+  "results": [
+    {
+      "run_name": "run_1",
+      "prompt": "What is DNA and how does it work?",
+      "response": "DNA (Deoxyribonucleic acid) is the molecule that carries genetic instructions for the development and functioning of living organisms. It consists of a double helix structure made of nucleotides, and uses a base-pair code (A-T, C-G) to store information that is used to make proteins.",
+      "correctness": 0.92,
+      "correctness_weighted": 0.94,
+      "faithfulness": 0.95
+    },
+    {
+      "run_name": "run_2",
+      "prompt": "How does the internet work?",
+      "response": "The internet works through a global network of interconnected computers that communicate using standardized protocols (like TCP/IP). Data is broken into packets, sent through various routes, and reassembled at the destination. This enables services like web browsing, email, and file sharing.",
+      "correctness": 0.88,
+      "correctness_weighted": 0.9,
+      "faithfulness": 0.92
+    },
+    {
+      "run_name": "run_3",
+      "prompt": "What causes earthquakes?",
+      "response": "Earthquakes are caused by the movement of tectonic plates in Earth's crust. When these plates move against each other, they can get stuck and build up pressure. When this pressure is suddenly released, it creates seismic waves that we feel as earthquakes.",
+      "correctness": 0.85,
+      "correctness_weighted": 0.87,
+      "faithfulness": 0.9
+    }
+  ]
+}

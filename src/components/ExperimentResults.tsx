@@ -330,49 +330,49 @@ export default function ExperimentResults({
                 {/* Nagłówek z metrykami */}
                 <div className="border-b bg-gray-50 relative">
                   <div className="px-6 py-3">
-                    <div className={`mx-[15%] flex items-center transition-all duration-300 ${comparingStates[index] ? 'opacity-0 absolute inset-0' : ''}`}>
-                      <h3 className="text-lg font-semibold text-gray-900 w-32">
+                    <div className={`mx-[5%] lg:mx-[15%] flex flex-col lg:flex-row items-start lg:items-center transition-all duration-300 ${comparingStates[index] ? 'opacity-0 absolute inset-0' : ''}`}>
+                      <h3 className="text-lg font-semibold text-gray-900 min-w-[120px] mb-4 lg:mb-0">
                         Question {index + 1}
                       </h3>
-                      <div className="flex-1 flex items-center justify-center space-x-12">
-                        <div className="text-center">
+                      <div className="flex-1 flex items-center justify-center space-x-8 lg:space-x-12 mb-4 lg:mb-0">
+                        <div className="text-center min-w-[100px] lg:min-w-[120px]">
                           <div className="text-sm font-medium text-gray-500">Correctness</div>
                           <div className={`text-xl font-bold ${getMetricColor(result.correctness)}`}>
                             {result.correctness === -1 ? '—' : formatMetricValueUtil(result.correctness)}
                           </div>
                         </div>
-                        <div className="text-center border-x px-12">
-                          <div className="text-sm font-medium text-gray-500">Weighted Score</div>
+                        <div className="text-center border-x px-8 lg:px-12 min-w-[100px] lg:min-w-[120px]">
+                          <div className="text-sm font-medium text-gray-500">Weighted Correctness</div>
                           <div className={`text-xl font-bold ${getMetricColor(result.correctness_weighted)}`}>
                             {result.correctness_weighted === -1 ? '—' : formatMetricValueUtil(result.correctness_weighted)}
                           </div>
                         </div>
-                        <div className="text-center">
+                        <div className="text-center min-w-[100px] lg:min-w-[120px]">
                           <div className="text-sm font-medium text-gray-500">Faithfulness</div>
                           <div className={`text-xl font-bold ${getMetricColor(result.faithfulness)}`}>
                             {result.faithfulness === -1 ? '—' : formatMetricValueUtil(result.faithfulness)}
                           </div>
                         </div>
                       </div>
-                      <div className="w-32 flex justify-end gap-2">
+                      <div className="flex flex-row justify-end gap-2 w-full lg:w-auto">
                         <button
                           onClick={() => toggleMetricsChart(index)}
-                          className="w-[400px] px-6 py-2 bg-indigo-600 text-white rounded-md shadow-sm text-base font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center whitespace-nowrap"
+                          className="px-3 py-2 bg-indigo-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center whitespace-nowrap"
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             {showingMetricsChart[index] ? (
                               <>
-                                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                <span>Close metrics progression</span>
+                                <span className="hidden sm:inline">Close</span>
                               </>
                             ) : (
                               <>
-                                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
-                                <span>Show metrics progression</span>
+                                <span className="hidden sm:inline">Metrics</span>
                               </>
                             )}
                           </div>
@@ -448,7 +448,7 @@ export default function ExperimentResults({
                             </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-sm font-medium text-gray-500 mb-2">Weighted Score</div>
+                            <div className="text-sm font-medium text-gray-500 mb-2">Weighted Correctness</div>
                             <div className="flex items-center justify-center space-x-4">
                               <div>
                                 <div className={`text-xl font-bold ${getMetricColor(result.correctness_weighted)}`}>
@@ -493,10 +493,10 @@ export default function ExperimentResults({
                 <div className="p-6 space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     <div className="bg-white rounded-lg shadow-sm p-4">
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center justify-between">
-                        {comparingStates[index] ? 'Current Response' : 'Prompt'}
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3 text-center">
+                        {comparingStates[index] ? `Current Version Response (v${experimentOrder[experimentId]})` : 'Prompt'}
                         {!expandedItems.has(`prompt-${index}`) && (
-                          <span className="text-xs text-gray-500">(click to expand)</span>
+                          <div className="text-xs text-gray-500 font-normal mt-1">(click to expand)</div>
                         )}
                       </h4>
                       <div 
@@ -510,10 +510,10 @@ export default function ExperimentResults({
                       </div>
                     </div>
                     <div className="bg-white rounded-lg shadow-sm p-4">
-                      <h4 className="font-medium text-gray-900 mb-3 flex items-center justify-between">
-                        {comparingStates[index] ? 'Compared Response' : 'Response'}
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3 text-center">
+                        {comparingStates[index] ? `Compared Version Response (v${experimentOrder[selectedVersions[index] || 'results_basic_prompts']})` : 'Response'}
                         {!expandedItems.has(`response-${index}`) && (
-                          <span className="text-xs text-gray-500">(click to expand)</span>
+                          <div className="text-xs text-gray-500 font-normal mt-1">(click to expand)</div>
                         )}
                       </h4>
                       <div 

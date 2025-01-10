@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Experiment, ExperimentResult } from '../types/experiment';
 import { loadExperiment } from '../data/experimentLoader';
 import { formatMetricValue } from '../utils/formatters';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceArea, Tooltip } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceArea, ReferenceLine, Tooltip } from 'recharts';
 import MetricTooltip from '../components/MetricTooltip';
 import ValidationStatusCard from '../components/ValidationStatusCard';
 import ExperimentResults from '../components/ExperimentResults';
@@ -28,9 +28,19 @@ interface TooltipProps {
 
 type MetricKey = 'correctness' | 'correctness_weighted' | 'faithfulness';
 
+// Mapowanie nazw eksperymentów na ich numery wersji
+const experimentOrder: { [key: string]: number } = {
+  'results_basic_prompts': 1,
+  'results_perfect_prompts': 2,
+  'results_perfect_prompts_no_ref': 3,
+  'results_perfect_prompts_4o_no_ref': 4,
+  'results_perfect_prompts_4o': 5
+};
+
 export default function ExperimentDetails() {
   const { experimentId } = useParams<{ experimentId: string }>();
   const [experiment, setExperiment] = useState<Experiment | null>(null);
+  const [allExperiments, setAllExperiments] = useState<{ [key: string]: ExperimentResult[] }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,31 +51,60 @@ export default function ExperimentDetails() {
     correctness_weighted: true,
     faithfulness: true
   });
+  const [comparisonVersion, setComparisonVersion] = useState(
+    experimentId === 'results_basic_prompts' ? 'results_perfect_prompts' : 'results_basic_prompts'
+  );
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadData = async () => {
-      if (!experimentId) return;
-      
-      try {
-        setLoading(true);
-        const data = await loadExperiment(experimentId);
-        
-        if (!data) {
-          throw new Error('No data returned');
+      if (experimentId) {
+        try {
+          setLoading(true);
+          setError(null);
+
+          // Załaduj główny eksperyment
+          const mainExperiment = await loadExperiment(experimentId);
+          if (!mainExperiment) {
+            throw new Error('Failed to load main experiment');
+          }
+          setExperiment(mainExperiment);
+
+          // Załaduj wszystkie eksperymenty
+          const allVersions = Object.keys(experimentOrder);
+          const experimentsData: { [key: string]: ExperimentResult[] } = {};
+          
+          await Promise.all(allVersions.map(async (version) => {
+            try {
+              const versionData = await loadExperiment(version);
+              if (versionData && versionData.results) {
+                experimentsData[version] = versionData.results;
+              }
+            } catch (err) {
+              console.error(`Error loading version ${version}:`, err);
+            }
+          }));
+
+          setAllExperiments(experimentsData);
+        } catch (err) {
+          console.error('Error loading experiments:', err);
+          setError('Failed to load experiment data. Please try again later.');
+        } finally {
+          setLoading(false);
         }
-        setExperiment(data);
-      } catch (err) {
-        console.error('Error loading experiment:', err);
-        setError('Failed to load experiment data');
-      } finally {
-        setLoading(false);
       }
     };
 
     loadData();
+  }, [experimentId]);
+
+  useEffect(() => {
+    // Aktualizuj wersję porównawczą przy zmianie experimentId
+    setComparisonVersion(
+      experimentId === 'results_basic_prompts' ? 'results_perfect_prompts' : 'results_basic_prompts'
+    );
   }, [experimentId]);
 
   const getFilteredResults = () => {
@@ -219,39 +258,9 @@ export default function ExperimentDetails() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        <span className="ml-2">Loading experiment data...</span>
-      </div>
-    );
-  }
-
-  if (error || !experiment) {
-    return (
-      <div className="p-8">
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="mt-2 text-sm text-red-700">{error || 'Failed to load experiment'}</div>
-              <div className="mt-4">
-                <Link to="/" className="text-sm font-medium text-red-800 hover:text-red-900">
-                  ← Back to experiments list
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const getComparisonResults = () => {
+    return allExperiments[comparisonVersion] || [];
+  };
 
   const filteredResults = getFilteredResults();
 
@@ -273,15 +282,15 @@ export default function ExperimentDetails() {
               <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"></path>
               </svg>
-              <span className="ml-1 text-sm font-medium text-gray-500 md:ml-2">{experiment.description}</span>
+              <span className="ml-1 text-sm font-medium text-gray-500 md:ml-2">{experiment?.description}</span>
             </div>
           </li>
         </ol>
       </nav>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{experiment.description}</h1>
-        <div className="text-gray-600 mt-2">Version: {experiment.name}</div>
+        <h1 className="text-3xl font-bold text-gray-900">{experiment?.description}</h1>
+        <div className="text-gray-600 mt-2">Version: {experiment?.name}</div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -302,10 +311,10 @@ export default function ExperimentDetails() {
             </div>
           </div>
           <div className="text-3xl font-bold text-blue-600">
-            {formatMetricValue(experiment.metrics.correctness)}
+            {experiment && formatMetricValue(experiment.metrics.correctness)}
           </div>
           <div className="text-sm text-gray-500 mt-2">
-            Average score across {experiment.results.filter(r => r.correctness !== -1).length} scored questions
+            Average score across {experiment?.results.filter(r => r.correctness !== -1).length} scored questions
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
@@ -325,10 +334,10 @@ export default function ExperimentDetails() {
             </div>
           </div>
           <div className="text-3xl font-bold text-blue-600">
-            {formatMetricValue(experiment.metrics.correctness_weighted)}
+            {experiment && formatMetricValue(experiment.metrics.correctness_weighted)}
           </div>
           <div className="text-sm text-gray-500 mt-2">
-            Weighted average score across {experiment.results.filter(r => r.correctness_weighted !== -1).length} scored questions
+            Weighted average score across {experiment?.results.filter(r => r.correctness_weighted !== -1).length} scored questions
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
@@ -348,10 +357,10 @@ export default function ExperimentDetails() {
             </div>
           </div>
           <div className="text-3xl font-bold text-blue-600">
-            {formatMetricValue(experiment.metrics.faithfulness)}
+            {experiment && formatMetricValue(experiment.metrics.faithfulness)}
           </div>
           <div className="text-sm text-gray-500 mt-2">
-            Average faithfulness score across {experiment.results.filter(r => r.faithfulness !== -1).length} scored questions
+            Average faithfulness score across {experiment?.results.filter(r => r.faithfulness !== -1).length} scored questions
           </div>
         </div>
       </div>
@@ -416,6 +425,17 @@ export default function ExperimentDetails() {
                   tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
                   allowDataOverflow={false}
                 />
+                {/* Stałe pionowe linie pomocnicze */}
+                {getMetricsChartData().map((data) => (
+                  <ReferenceLine
+                    key={`line-${data.questionNumber}`}
+                    x={data.questionNumber}
+                    stroke="#e5e7eb"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                  />
+                ))}
+                {/* Obszary hover */}
                 {getMetricsChartData().map((data) => (
                   <ReferenceArea
                     key={data.questionNumber}
@@ -501,11 +521,27 @@ export default function ExperimentDetails() {
 
         {/* Panel z informacjami o największych zmianach */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Metrics Changes Highlights (compared to previous version)</h3>
-          {experiment && experiment.previousVersion && (
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-lg font-semibold">Metrics Changes Highlights (compared to</h3>
+            <select
+              className="text-sm border rounded-md py-1 px-2"
+              value={comparisonVersion}
+              onChange={(e) => setComparisonVersion(e.target.value)}
+            >
+              {Object.entries(experimentOrder)
+                .filter(([key]) => key !== experimentId)
+                .map(([key, value]) => (
+                  <option key={key} value={key}>
+                    Version {value}
+                  </option>
+                ))}
+            </select>
+            <h3 className="text-lg font-semibold">)</h3>
+          </div>
+          {experiment && (
             <div className="space-y-6">
               {(() => {
-                const changes = calculateMetricChanges(experiment.results, experiment.previousVersion?.results);
+                const changes = calculateMetricChanges(experiment.results, getComparisonResults());
                 return (
                   <>
                     <div className="space-y-2">
@@ -638,8 +674,8 @@ export default function ExperimentDetails() {
               })()}
             </div>
           )}
-          {!experiment?.previousVersion && (
-            <p className="text-sm text-gray-500">No previous version available for comparison</p>
+          {!experiment && (
+            <p className="text-sm text-gray-500">No experiment data available</p>
           )}
         </div>
       </div>
@@ -657,7 +693,11 @@ export default function ExperimentDetails() {
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
             <ExperimentResults 
               results={experiment.results} 
-              previousResults={experiment.previousVersion?.results}
+              previousResults={getComparisonResults()}
+              currentVersion={`v${experimentOrder[experimentId || ''] || '?'}`}
+              previousVersion={comparisonVersion ? `v${experimentOrder[comparisonVersion] || '?'}` : undefined}
+              experimentId={experimentId || ''}
+              allExperiments={allExperiments}
             />
           </div>
         </div>

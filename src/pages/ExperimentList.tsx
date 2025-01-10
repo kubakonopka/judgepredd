@@ -154,21 +154,13 @@ export default function ExperimentList() {
 
   return (
     <div className="p-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <h1 className="text-2xl font-bold">Experiments</h1>
-          <button 
-            onClick={fetchExperiments}
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm flex items-center gap-2"
-            disabled={loading}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
-        </div>
-        <div className="w-full overflow-x-auto">
+      <div className="flex justify-center mb-4">
+        <h1 className="text-2xl font-bold">JudgePredd Proof of Concept Results - HALT USE CASE</h1>
+      </div>
+
+      <div className="flex flex-col items-center mb-8">
+        <h2 className="text-xl font-semibold mb-4">Metrics Progression Across Versions</h2>
+        <div className="w-full overflow-x-auto flex justify-center">
           <LineChart width={800} height={400} data={getChartData()} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />

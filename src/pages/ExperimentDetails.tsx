@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Experiment, ExperimentResult } from '../types/experiment';
-import { loadExperiment } from '../data/experimentLoader';
+import { loadExperiment, getExperimentOrder } from '../data/experimentLoader';
 import { formatMetricValue } from '../utils/formatters';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceArea, ReferenceLine, Tooltip } from 'recharts';
 import MetricTooltip from '../components/MetricTooltip';
@@ -28,14 +28,12 @@ interface TooltipProps {
 
 type MetricKey = 'correctness' | 'correctness_weighted' | 'faithfulness';
 
-// Mapowanie nazw eksperymentów na ich numery wersji
-const experimentOrder: { [key: string]: number } = {
-  'results_basic_prompts': 1,
-  'results_perfect_prompts': 2,
-  'results_perfect_prompts_no_ref': 3,
-  'results_perfect_prompts_4o_no_ref': 4,
-  'results_perfect_prompts_4o': 5
-};
+interface ExperimentInfo {
+  name: string;
+  description: string;
+  version: number;
+  path: string;
+}
 
 export default function ExperimentDetails() {
   const { experimentId } = useParams<{ experimentId: string }>();
@@ -51,6 +49,7 @@ export default function ExperimentDetails() {
     correctness_weighted: true,
     faithfulness: true
   });
+  const [experimentOrder, setExperimentOrder] = useState<{ [key: string]: number }>({});
   const [comparisonVersion, setComparisonVersion] = useState(
     experimentId === 'results_basic_prompts' ? 'results_perfect_prompts' : 'results_basic_prompts'
   );
@@ -65,6 +64,10 @@ export default function ExperimentDetails() {
           setLoading(true);
           setError(null);
 
+          // Załaduj kolejność eksperymentów
+          const order = await getExperimentOrder();
+          setExperimentOrder(order);
+
           // Załaduj główny eksperyment
           const mainExperiment = await loadExperiment(experimentId);
           if (!mainExperiment) {
@@ -73,10 +76,10 @@ export default function ExperimentDetails() {
           setExperiment(mainExperiment);
 
           // Załaduj wszystkie eksperymenty
-          const allVersions = Object.keys(experimentOrder);
+          const allVersions = Object.keys(order);
           const experimentsData: { [key: string]: ExperimentResult[] } = {};
           
-          await Promise.all(allVersions.map(async (version) => {
+          await Promise.all(allVersions.map(async (version: string) => {
             try {
               const versionData = await loadExperiment(version);
               if (versionData && versionData.results) {
@@ -682,25 +685,21 @@ export default function ExperimentDetails() {
 
       {/* Panel walidacji */}
       {experiment && (
-        <div className="mb-8">
+        <div className="mb-4">
           <ValidationStatusCard validation={experiment.rawData.dataValidation} />
         </div>
       )}
 
       {/* Panel z wynikami */}
       {experiment && (
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <ExperimentResults 
-              results={experiment.results} 
-              previousResults={getComparisonResults()}
-              currentVersion={`v${experimentOrder[experimentId || ''] || '?'}`}
-              previousVersion={comparisonVersion ? `v${experimentOrder[comparisonVersion] || '?'}` : undefined}
-              experimentId={experimentId || ''}
-              allExperiments={allExperiments}
-            />
-          </div>
-        </div>
+        <ExperimentResults
+          results={experiment.results}
+          previousResults={getComparisonResults()}
+          currentVersion={`v${experimentOrder[experimentId || ''] || '?'}`}
+          previousVersion={comparisonVersion ? `v${experimentOrder[comparisonVersion] || '?'}` : undefined}
+          experimentId={experimentId || ''}
+          allExperiments={allExperiments}
+        />
       )}
     </div>
   );

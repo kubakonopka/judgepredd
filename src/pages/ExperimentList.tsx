@@ -3,16 +3,8 @@ import { Link } from 'react-router-dom';
 import { Experiment } from '../types/experiment';
 import { loadAllExperiments } from '../data/experimentLoader';
 import { formatMetricValue } from '../utils/formatters';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-
-// Mapowanie nazw eksperymentów na ich numery wersji
-const experimentOrder: { [key: string]: number } = {
-  'results_basic_prompts': 1,
-  'results_perfect_prompts': 2,
-  'results_perfect_prompts_no_ref': 3,
-  'results_perfect_prompts_4o_no_ref': 4,
-  'results_perfect_prompts_4o': 5
-};
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { experimentOrder } from '../constants';
 
 function calculatePercentageChange(current: number, previous: number): string {
   if (previous === 0) return '-';
@@ -57,6 +49,35 @@ function getHighFaithfulnessStats(experiment: Experiment) {
     totalValid: validResults.length
   };
 }
+
+const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
+  if (!active || !payload) return null;
+
+  const metrics = [
+    { name: 'Correctness', value: payload[0]?.value, color: '#3b82f6' },
+    { name: 'Weighted Correctness', value: payload[1]?.value, color: '#10b981' },
+    { name: 'Faithfulness', value: payload[2]?.value, color: '#f59e0b' }
+  ];
+
+  return (
+    <div className="bg-white p-3 border rounded shadow-lg text-sm">
+      <p className="font-medium mb-2">{label}</p>
+      <div className="space-y-1">
+        {metrics.map((metric, idx) => (
+          <div key={idx} className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: metric.color }}></div>
+              <span>{metric.name}:</span>
+            </div>
+            <span className="font-medium">
+              {metric.value === undefined ? 'N/A' : `${metric.value.toFixed(1)}%`}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function ExperimentList() {
   const [experiments, setExperiments] = useState<Experiment[]>([]);
@@ -161,16 +182,58 @@ export default function ExperimentList() {
       <div className="flex flex-col items-center mb-8">
         <h2 className="text-xl font-semibold mb-4">Metrics Progression Across Versions</h2>
         <div className="w-full overflow-x-auto flex justify-center">
-          <LineChart width={800} height={400} data={getChartData()} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis domain={[0, 100]} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="correctness" stroke="#8884d8" name="Correctness" />
-            <Line type="monotone" dataKey="correctness_weighted" stroke="#82ca9d" name="Weighted Correctness" />
-            <Line type="monotone" dataKey="faithfulness" stroke="#ffc658" name="Faithfulness" />
-          </LineChart>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={getChartData()} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} />
+              <XAxis 
+                dataKey="name" 
+                padding={{ left: 30, right: 30 }}
+                tick={{ fill: '#4B5563' }}
+              />
+              <YAxis 
+                domain={[0, 100]} 
+                tick={{ fill: '#4B5563' }}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <Tooltip 
+                content={<CustomTooltip />}
+              />
+              <Legend 
+                verticalAlign="top" 
+                height={36}
+                wrapperStyle={{
+                  paddingTop: '10px'
+                }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="correctness" 
+                stroke="#3b82f6" 
+                name="Correctness"
+                strokeWidth={2}
+                dot={{ fill: '#3b82f6', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="correctness_weighted" 
+                stroke="#10b981" 
+                name="Weighted Correctness"
+                strokeWidth={2}
+                dot={{ fill: '#10b981', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="faithfulness" 
+                stroke="#f59e0b" 
+                name="Faithfulness"
+                strokeWidth={2}
+                dot={{ fill: '#f59e0b', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

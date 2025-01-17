@@ -32,55 +32,57 @@ interface RunData {
   }>;
 }
 
-function getExperimentPath(experimentName: string): string | { [key: string]: string } {
-  const experimentMap: { [key: string]: string } = {
-    'results_basic_prompts': '1. results_basic_prompts',
-    'results_perfect_prompts': '2. results_perfect_prompts',
-    'results_perfect_prompts_no_ref': '3. results_perfect_prompts_no_ref',
-    'results_perfect_prompts_4o_no_ref': '4. results_perfect_prompts_4o_no_ref',
-    'results_perfect_prompts_4o': '5. results_perfect_prompts_4o'
-  };
+let experiments: any[] = [];
 
-  return experimentName ? experimentMap[experimentName] || experimentName : experimentMap;
+export interface ExperimentInfo {
+  name: string;
+  description: string;
+  version: number;
+  path: string;
 }
+
+async function loadExperiments() {
+  try {
+    experiments = window.EXPERIMENTS_DATA;
+  } catch (error) {
+    console.error('Error loading experiments:', error);
+  }
+}
+
+export async function getExperimentOrder(): Promise<{ [key: string]: number }> {
+  if (experiments.length === 0) {
+    await loadExperiments();
+  }
+  return experiments.reduce((acc: { [key: string]: number }, exp: ExperimentInfo) => {
+    acc[exp.name] = exp.version;
+    return acc;
+  }, {});
+}
+
+const getExperimentPath = (experimentName: string): string => {
+  const experiment = experiments.find(exp => exp.name === experimentName);
+  return experiment ? experiment.path : experimentName;
+};
 
 /**
  * Ładuje surowe dane eksperymentu z pliku JSON
  */
 export async function loadRawExperimentData(experimentName: string): Promise<RawExperimentData> {
   try {
-    const folderName = getExperimentPath(experimentName);
-    const baseUrl = getBaseUrl();
-    const jsonPath = `/mlflow_results/${folderName}/run.json`;
-    console.log('Loading data from:', jsonPath);
-    
-    const response = await fetch(baseUrl + jsonPath);
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const rawData: RunData[] = await response.json();
-    console.log('Loaded raw data:', rawData);
+    await loadExperiments();
+    const data = window.EXPERIMENT_RESULTS[experimentName];
     
     // Załaduj opis z pliku description.txt jeśli istnieje
     let description = '';
     try {
-      const descPath = `/mlflow_results/${folderName}/description.txt`;
-      console.log('Loading description from:', descPath);
-      const descResponse = await fetch(baseUrl + descPath);
-      console.log('Description response status:', descResponse.status);
-      
-      if (descResponse.ok) {
-        description = await descResponse.text();
-      }
+      const experiment = experiments.find(exp => exp.name === experimentName);
+      description = experiment?.description || '';
     } catch (error) {
-      console.warn(`Could not load description for ${experimentName}:`, error);
+      console.warn('Could not load description:', error);
     }
 
     // Przekształć dane do oczekiwanego formatu
-    const results: ExperimentResult[] = rawData.map(run => ({
+    const results: ExperimentResult[] = data.map(run => ({
       prompt: run.prompt,
       response: run.response,
       correctness: run.correctness,
@@ -94,11 +96,11 @@ export async function loadRawExperimentData(experimentName: string): Promise<Raw
     
     return {
       name: experimentName,
-      description: description || getExperimentDescription(experimentName),
+      description,
       results
     };
   } catch (error) {
-    console.error(`Error loading experiment data for ${experimentName}:`, error);
+    console.error('Error loading experiment data:', error);
     throw error;
   }
 }
@@ -114,18 +116,19 @@ export async function loadExperiment(experimentName: string): Promise<Experiment
     const results = rawData.results;
 
     // Załaduj listę wszystkich eksperymentów, aby znaleźć poprzednią wersję
-    const experiments = Object.keys(getExperimentPath('')).map(name => ({
-      name,
-      description: getExperimentDescription(name)
+    await loadExperiments();
+    const experimentsList = experiments.map(exp => ({
+      name: exp.name,
+      description: getExperimentDescription(exp.name)
     }));
     
     // Znajdź indeks obecnego eksperymentu
-    const currentIndex = experiments.findIndex(exp => exp.name === experimentName);
+    const currentIndex = experimentsList.findIndex(exp => exp.name === experimentName);
     let previousVersion: Experiment | null = null;
 
     // Jeśli to nie jest pierwszy eksperyment, załaduj poprzednią wersję
     if (currentIndex > 0) {
-      previousVersion = await loadExperiment(experiments[currentIndex - 1].name);
+      previousVersion = await loadExperiment(experimentsList[currentIndex - 1].name);
     }
 
     // Oblicz metryki
@@ -168,7 +171,7 @@ export async function loadExperiment(experimentName: string): Promise<Experiment
       faithfulness: metrics.faithfulness,
       rawData: {
         dataValidation: {
-          dataPath: getBaseUrl() + `/mlflow_results/${getExperimentPath(experimentName)}/run.json`,
+          dataPath: `/mlflow_results/${getExperimentPath(experimentName)}/run.json`,
           loadedSuccessfully: validationResult.isValid,
           validationErrors: validationResult.errors,
           validationDetails: {
@@ -201,28 +204,26 @@ export async function loadExperiment(experimentName: string): Promise<Experiment
  */
 export async function loadAllExperiments(): Promise<Experiment[]> {
   try {
-    const response = await fetch(`${process.env.PUBLIC_URL}/mlflow_results/experiments.json`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch experiments.json');
-    }
-    const experiments = await response.json();
+    await loadExperiments();
     
     // Załaduj dane dla każdego eksperymentu
     const loadedExperiments = await Promise.all(
-      experiments.map(async (exp: any) => {
-        try {
-          return await loadExperiment(exp.name);
-        } catch (error) {
-          console.error(`Error loading experiment ${exp.name}:`, error);
-          return null;
-        }
+      experiments.map(async (exp) => {
+        const experiment = await loadExperiment(exp.name);
+        return experiment;
       })
     );
-    
-    // Odfiltruj nieudane ładowania
-    return loadedExperiments.filter((exp): exp is Experiment => exp !== null);
+
+    // Filtruj null values i sortuj po version
+    return loadedExperiments
+      .filter((exp): exp is Experiment => exp !== null)
+      .sort((a, b) => {
+        const versionA = experiments.find(e => e.name === a.name)?.version || 0;
+        const versionB = experiments.find(e => e.name === b.name)?.version || 0;
+        return versionA - versionB;
+      });
   } catch (error) {
-    console.error('Error loading all experiments:', error);
+    console.error('Error loading experiments:', error);
     return [];
   }
 }
@@ -232,6 +233,11 @@ function getBaseUrl(): string {
 }
 
 function getExperimentDescription(name: string): string {
+  const experiment = experiments.find(exp => exp.name === name);
+  if (experiment?.description) {
+    return experiment.description;
+  }
+  // Fallback do starej metody jeśli nie znajdziemy opisu
   return name.replace(/_/g, ' ')
     .replace(/\b\w/g, l => l.toUpperCase());
 }

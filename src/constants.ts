@@ -7,17 +7,34 @@ export const experimentOrder: Record<string, number> = {
   'results_perfect_prompts_4o': 5
 };
 
+// Inicjalizujemy pustą tablicą
 export let experiments: any[] = [];
 
 // Ładujemy dane z experiments.json
 export async function loadExperimentData() {
   try {
-    experiments = window.EXPERIMENTS_DATA;
+    let loadedExperiments;
+    if (window.EXPERIMENTS_DATA) {
+      // Tryb produkcyjny - używamy wbudowanych danych
+      loadedExperiments = window.EXPERIMENTS_DATA;
+    } else {
+      // Tryb deweloperski - ładujemy z plików
+      const response = await fetch(`${process.env.PUBLIC_URL}/mlflow_results/experiments.json`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch experiments.json');
+      }
+      loadedExperiments = await response.json();
+    }
+
+    // Aktualizujemy experiments dopiero po załadowaniu
+    experiments = loadedExperiments;
     
     // Aktualizujemy experimentOrder na podstawie załadowanych danych
-    experiments.forEach(exp => {
-      experimentOrder[exp.name] = exp.version;
-    });
+    if (experiments && experiments.length > 0) {
+      experiments.forEach(exp => {
+        experimentOrder[exp.name] = exp.version;
+      });
+    }
   } catch (error) {
     console.error('Error loading experiments:', error);
   }

@@ -43,9 +43,22 @@ export interface ExperimentInfo {
 
 async function loadExperiments() {
   try {
-    experiments = window.EXPERIMENTS_DATA;
+    let loadedExperiments;
+    if (window.EXPERIMENTS_DATA) {
+      // Tryb produkcyjny - używamy wbudowanych danych
+      loadedExperiments = window.EXPERIMENTS_DATA;
+    } else {
+      // Tryb deweloperski - ładujemy z plików
+      const response = await fetch(`${process.env.PUBLIC_URL}/mlflow_results/experiments.json`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch experiments.json');
+      }
+      loadedExperiments = await response.json();
+    }
+    experiments = loadedExperiments || [];
   } catch (error) {
     console.error('Error loading experiments:', error);
+    experiments = [];
   }
 }
 
@@ -70,8 +83,23 @@ const getExperimentPath = (experimentName: string): string => {
 export async function loadRawExperimentData(experimentName: string): Promise<RawExperimentData> {
   try {
     await loadExperiments();
-    const data = window.EXPERIMENT_RESULTS[experimentName];
     
+    let data: RunData[];
+    if (window.EXPERIMENT_RESULTS) {
+      // Tryb produkcyjny - używamy wbudowanych danych
+      data = window.EXPERIMENT_RESULTS[experimentName] as RunData[];
+    } else {
+      // Tryb deweloperski - ładujemy z plików
+      const folderName = getExperimentPath(experimentName);
+      const baseUrl = getBaseUrl();
+      const jsonPath = `/mlflow_results/${folderName}/run.json`;
+      const response = await fetch(baseUrl + jsonPath);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      data = await response.json();
+    }
+
     // Załaduj opis z pliku description.txt jeśli istnieje
     let description = '';
     try {
@@ -82,7 +110,8 @@ export async function loadRawExperimentData(experimentName: string): Promise<Raw
     }
 
     // Przekształć dane do oczekiwanego formatu
-    const results: ExperimentResult[] = data.map(run => ({
+    const results: ExperimentResult[] = data.map((run: RunData) => ({
+      run_name: run.run_name,
       prompt: run.prompt,
       response: run.response,
       correctness: run.correctness,
@@ -90,10 +119,9 @@ export async function loadRawExperimentData(experimentName: string): Promise<Raw
       faithfulness: run.faithfulness,
       correctness_claims: run.correctness_claims,
       correctness_weighted_claims: run.correctness_weighted_claims,
-      faithfulness_claims: run.faithfulness_claims,
-      run_name: run.run_name
+      faithfulness_claims: run.faithfulness_claims
     }));
-    
+
     return {
       name: experimentName,
       description,
@@ -205,25 +233,24 @@ export async function loadExperiment(experimentName: string): Promise<Experiment
 export async function loadAllExperiments(): Promise<Experiment[]> {
   try {
     await loadExperiments();
+    if (!experiments || experiments.length === 0) {
+      return [];
+    }
     
-    // Załaduj dane dla każdego eksperymentu
     const loadedExperiments = await Promise.all(
-      experiments.map(async (exp) => {
-        const experiment = await loadExperiment(exp.name);
-        return experiment;
+      experiments.map(async (exp: ExperimentInfo) => {
+        try {
+          return await loadExperiment(exp.name);
+        } catch (error) {
+          console.error(`Error loading experiment ${exp.name}:`, error);
+          return null;
+        }
       })
     );
 
-    // Filtruj null values i sortuj po version
-    return loadedExperiments
-      .filter((exp): exp is Experiment => exp !== null)
-      .sort((a, b) => {
-        const versionA = experiments.find(e => e.name === a.name)?.version || 0;
-        const versionB = experiments.find(e => e.name === b.name)?.version || 0;
-        return versionA - versionB;
-      });
+    return loadedExperiments.filter((exp): exp is Experiment => exp !== null);
   } catch (error) {
-    console.error('Error loading experiments:', error);
+    console.error('Error loading all experiments:', error);
     return [];
   }
 }

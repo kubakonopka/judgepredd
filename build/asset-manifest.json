@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/judgepredd/static/css/main.c3fe5c88.css",
-    "main.js": "/judgepredd/static/js/main.422067b2.js",
-    "index.html": "/judgepredd/index.html",
-    "main.c3fe5c88.css.map": "/judgepredd/static/css/main.c3fe5c88.css.map",
-    "main.422067b2.js.map": "/judgepredd/static/js/main.422067b2.js.map"
+    "main.css": "./static/css/main.13f0aa2f.css",
+    "main.js": "./static/js/main.5383c870.js",
+    "index.html": "./index.html",
+    "main.13f0aa2f.css.map": "./static/css/main.13f0aa2f.css.map",
+    "main.5383c870.js.map": "./static/js/main.5383c870.js.map"
   },
   "entrypoints": [
-    "static/css/main.c3fe5c88.css",
-    "static/js/main.422067b2.js"
+    "static/css/main.13f0aa2f.css",
+    "static/js/main.5383c870.js"
   ]
 }

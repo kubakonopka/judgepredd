@@ -66,7 +66,7 @@ function modifySourceCode() {
     // Lista plików do modyfikacji
     const filesToModify = [
         'src/data/experimentLoader.ts',
-        'src/data/constants.ts',
+        'src/constants.ts',
         'src/pages/ExperimentList.tsx',
         'src/pages/ExperimentDetails.tsx'
     ];
@@ -79,18 +79,13 @@ function modifySourceCode() {
 
         // Zamień wszystkie fetche na użycie globalnych zmiennych
         content = content.replace(
-            /const response = await fetch.*experiments\.json.*\n.*experiments = await response\.json\(\);/g,
-            'const experiments = window.EXPERIMENTS_DATA;'
+            /const response = await fetch\(`\${.*}\/mlflow_results\/experiments\.json`\);.*\n.*if \(!response\.ok\).*\n.*throw new Error.*\n.*loadedExperiments = await response\.json\(\);/g,
+            'loadedExperiments = window.EXPERIMENTS_DATA;'
         );
 
         content = content.replace(
-            /const response = await fetch.*run\.json.*\n.*const data = await response\.json\(\);/g,
-            'const data = window.EXPERIMENT_RESULTS[experimentName];'
-        );
-
-        content = content.replace(
-            /fetch\(`\${.*}\/mlflow_results\/.*\.json`\)/g,
-            'Promise.resolve(window.EXPERIMENTS_DATA)'
+            /const response = await fetch\(baseUrl \+ jsonPath\);.*\n.*if \(!response\.ok\).*\n.*throw new Error.*\n.*data = await response\.json\(\);/g,
+            'data = window.EXPERIMENT_RESULTS[experimentName];'
         );
 
         fs.writeFileSync(fullPath, content);

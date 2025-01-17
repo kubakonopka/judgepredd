@@ -4,6 +4,7 @@ import { formatMetricValue as formatMetricValueUtil } from '../utils/formatters'
 import ReactMarkdown from 'react-markdown';
 import CompareVersions from './CompareVersions';
 import QuestionMetricsChart from './QuestionMetricsChart';
+import MetricsDrilldown from './MetricsDrilldown';
 import { experimentOrder } from '../constants';
 
 interface ExperimentResultsProps {
@@ -844,6 +845,13 @@ export default function ExperimentResults({
                         )}
                       </button>
                     </div>
+
+                    {/* Metrics Drilldown */}
+                    {!comparingStates[index] && (
+                      <div className="mt-6">
+                        <MetricsDrilldown result={result} />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
